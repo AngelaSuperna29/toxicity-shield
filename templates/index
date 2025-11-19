@@ -1,1 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Toxicity Shield</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body class="p-4">
+    <div class="container">
+      <h1 class="mb-4">Toxicity Shield — Detect & Rephrase</h1>
+
+      <form id="analyzeForm">
+        <div class="mb-3">
+          <label for="text" class="form-label">Enter comment</label>
+          <textarea class="form-control" id="text" name="text" rows="4"></textarea>
+        </div>
+        <div class="mb-3">
+          <label for="lang" class="form-label">Output language (optional, e.g. en, hi, ta)</label>
+          <input class="form-control" id="lang" name="lang" placeholder="leave blank to match input language">
+        </div>
+        <button type="submit" class="btn btn-primary">Analyze</button>
+      </form>
+
+      <div id="result" class="mt-4"></div>
+    </div>
+
+    <script>
+      const form = document.getElementById('analyzeForm');
+      const resultDiv = document.getElementById('result');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        resultDiv.innerHTML = 'Analyzing...';
+        const text = document.getElementById('text').value;
+        const lang = document.getElementById('lang').value || null;
+        const res = await fetch('/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, lang })
+        });
+        const data = await res.json();
+        if (data.error) {
+          resultDiv.innerHTML = '<div class="alert alert-danger">' + data.error + '</div>';
+        } else {
+          resultDiv.innerHTML = `
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Result</h5>
+                <p><strong>Original:</strong> ${data.original}</p>
+                <p><strong>Toxicity:</strong> ${data.toxicity} (${data.score})</p>
+                <p><strong>Rewritten:</strong> ${data.rewritten}</p>
+              </div>
+            </div>
+          `;
+        }
+      });
+    </script>
+  </body>
+</html>
 
